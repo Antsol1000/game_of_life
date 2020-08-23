@@ -53,30 +53,32 @@ class Board:
 
     def step(self, time_step):
         self.step_count += 1
-        new_bin_board = self.bin_board
+        tk.Label(self.root, text="day: {}".format(self.step_count)).grid(columnspan=2, column=3,
+                                                                         row=0, stick=tk.W)
+        new_bin_board = [x[:] for x in self.bin_board]
 
         for i in range(self.size):
             for j in range(self.size):
                 neighbours = self.check_status(i + 1, j + 1)
                 if neighbours == 2:
                     continue
-                if neighbours == 3:
+                elif neighbours == 3:
                     new_bin_board[i + 1][j + 1] = 1
                 else:
                     new_bin_board[i + 1][j + 1] = 0
 
-        self.bin_board = new_bin_board
+        if new_bin_board != self.bin_board:
+            self.bin_board = [x[:] for x in new_bin_board]
 
-        for i in range(self.size):
-            for j in range(self.size):
-                if self.bin_board[i + 1][j + 1] == 1:
-                    self.board[i][j]['text'] = self.char
-                else:
-                    self.board[i][j]['text'] = ""
-        tk.Label(self.root, text="day: {}".format(self.step_count)).grid(columnspan=2, column=3,
-                                                                         row=0, stick=tk.W)
-        self.count()
-        self.root.after(time_step, lambda: self.step(time_step))
+            for i in range(self.size):
+                for j in range(self.size):
+                    if self.bin_board[i + 1][j + 1] == 1:
+                        self.board[i][j]['text'] = self.char
+                    else:
+                        self.board[i][j]['text'] = ""
+
+            self.count()
+            self.root.after(time_step, lambda: self.step(time_step))
 
     def draw(self):
         self.clear()
