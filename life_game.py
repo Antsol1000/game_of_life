@@ -5,7 +5,7 @@ import settings
 
 class Board:
     """
-    class Board contains all the stuff displaying on root window
+    class Board contains all the stuff displayed on root window
     """
 
     def __init__(self, root, size, char):
