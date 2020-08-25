@@ -4,6 +4,9 @@ import settings
 
 
 class Board:
+    """
+    class Board,
+    """
 
     def __init__(self, root, size, char):
         self.settings_button = tk.Button(root, text="SETTINGS", height=1,
