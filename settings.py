@@ -7,7 +7,7 @@ def start(board):
     """
     this function is used to call out Settings window
     """
-    s = Settings(board)
+    Settings(board)
 
 
 class Settings:
@@ -30,11 +30,11 @@ class Settings:
 
         # creates entries for params
         self.char_entry = tk.Entry(self.top, width=10)
-        self.char_entry.insert(0, 'X')
+        self.char_entry.insert(0, board.char)
         self.size_entry = tk.Entry(self.top, width=10)
-        self.size_entry.insert(0, '10')
+        self.size_entry.insert(0, board.size)
         self.time_step_entry = tk.Entry(self.top, width=10)
-        self.time_step_entry.insert(0, '500')
+        self.time_step_entry.insert(0, TIME_STEP)
 
         # creates save_settings button
         self.save_button = tk.Button(self.top, text="SAVE SETTINGS",
