@@ -25,8 +25,12 @@ class Board:
                                      command=self.draw)
         self.start_game_button = tk.Button(root, text="START", height=1,
                                            command=lambda: self.start_game(settings.TIME_STEP))
+        self.clear_button = tk.Button(root, text="CLEAR", height=1,
+                                      command=self.clear)
+        self.reset_day_button = tk.Button(root, text="RESET", height=1,
+                                          command=self.reset_day)
         # number of the day
-        self.step_count = 0
+        self.day_number = 0
         # params
         self.char = char
         self.size = size
@@ -41,10 +45,15 @@ class Board:
         """
         display functional buttons
         """
+        # top
         self.settings_button.grid(columnspan=3, column=0, row=0, stick=tk.W)
         self.exit_button.grid(columnspan=3, column=self.size - 3, row=0, stick=tk.E)
-        self.draw_button.grid(columnspan=3, column=self.size - 3, row=self.size + 1, stick=tk.E)
-        self.start_game_button.grid(columnspan=3, column=0, row=self.size + 1, stick=tk.W)
+        # bottom left
+        self.start_game_button.grid(columnspan=2, column=0, row=self.size + 1, stick=tk.W)
+        self.draw_button.grid(columnspan=2, column=2, row=self.size + 1, stick=tk.W)
+        # bottom right
+        self.clear_button.grid(columnspan=2, column=self.size - 2, row=self.size + 1, stick=tk.E)
+        self.reset_day_button.grid(columnspan=2, column=self.size - 4, row=self.size + 1, stick=tk.E)
 
     def click(self, row, column):
         """
@@ -61,8 +70,7 @@ class Board:
         for i in range(self.size):
             for j in range(self.size):
                 self.board[i][j].grid(row=i + 1, column=j)
-        tk.Label(self.root, text="day: {}".format(self.step_count)).grid(columnspan=3, column=3,
-                                                                         row=0, stick=tk.W)
+        self.show_day_number()
 
     def check_status(self, row, column):
         """
@@ -87,9 +95,8 @@ class Board:
         :param time_step: length of the day
         """
         # add 1 to day number
-        self.step_count += 1
-        tk.Label(self.root, text="day: {}".format(self.step_count)).grid(columnspan=2, column=3,
-                                                                         row=0, stick=tk.W)
+        self.day_number += 1
+        self.show_day_number()
         # copy the bin board !! remember of copying they are lists!!
         new_bin_board = [x[:] for x in self.bin_board]
 
@@ -105,7 +112,7 @@ class Board:
                     new_bin_board[i + 1][j + 1] = 0
 
         # if new board is equal to old there is stable format
-        # and program should stop
+        # and program should stop making start_game_button DISABLED
         if new_bin_board != self.bin_board:
             self.bin_board = [x[:] for x in new_bin_board]
 
@@ -119,6 +126,8 @@ class Board:
             # count alive cells and call out next step() after TIME_STEP
             self.count()
             self.root.after(time_step, lambda: self.step(time_step))
+        else:
+            self.start_game_button['state'] = tk.DISABLED
 
     def draw(self):
         """
@@ -131,6 +140,7 @@ class Board:
                 if random.randint(0, 1) == 1:
                     self.click(i, j)
         self.count()
+        self.start_game_button['state'] = tk.NORMAL
 
     def clear(self):
         """
@@ -151,3 +161,17 @@ class Board:
                 living_cells += j
         tk.Label(self.root, text="living cells: {}  ".format(living_cells)).grid(columnspan=4, column=5,
                                                                                  row=0, stick=tk.W)
+
+    def reset_day(self):
+        """
+        reset and display day_number
+        """
+        self.day_number = 0
+        self.show_day_number()
+
+    def show_day_number(self):
+        """
+        display label with day_number
+        """
+        tk.Label(self.root, text="day:{:03d}".format(self.day_number)).grid(columnspan=2, column=3,
+                                                                            row=0, stick=tk.W)

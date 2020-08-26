@@ -67,21 +67,22 @@ class Settings:
         creates new window, entries for params and save button param
         at the end it calls self.show() which grids all the stuff
         """
+        self.board = board
         # creates new window
         self.top = tk.Toplevel()
         self.top.title("SETTINGS")
 
         # creates entries for params
         self.char_entry = tk.Entry(self.top, width=10)
-        self.char_entry.insert(0, board.char)
+        self.char_entry.insert(0, self.board.char)
         self.size_entry = tk.Entry(self.top, width=10)
-        self.size_entry.insert(0, board.size)
+        self.size_entry.insert(0, self.board.size)
         self.time_step_entry = tk.Entry(self.top, width=10)
         self.time_step_entry.insert(0, TIME_STEP)
 
         # creates save_settings button
         self.save_button = tk.Button(self.top, text="SAVE SETTINGS",
-                                     command=lambda b=board: self.save_settings(b))
+                                     command=self.save_settings)
 
         self.show()
 
@@ -99,7 +100,7 @@ class Settings:
 
         self.save_button.grid(row=3, columnspan=2)
 
-    def set_char(self, board):
+    def set_char(self):
         """
         sets param char, taken from entry
         """
@@ -107,9 +108,9 @@ class Settings:
         if len(char) > 1:
             raise CharException
         else:
-            board.char = char
+            self.board.char = char
 
-    def set_size(self, board):
+    def set_size(self):
         """
         sets param size, taken from entry
         """
@@ -117,7 +118,7 @@ class Settings:
         if size > MAX_SIZE or size < MIN_SIZE:
             raise SizeException
         else:
-            board.size = size
+            self.board.size = size
 
     def set_time_step(self):
         """
@@ -129,27 +130,27 @@ class Settings:
         except Exception:
             raise TimeStepException
 
-    def save_settings(self, board):
+    def save_settings(self):
         """
         this function is called when one clicks save_button
         it sets all params, edits the board and destroy Settings window
         """
         # set param
         try:
-            self.set_char(board)
-            self.set_size(board)
+            self.set_char()
+            self.set_size()
             self.set_time_step()
         except SettingException as err:
             err.show()
         else:
             # edit the board and show new
-            board.board = [[tk.Button(board.root, width=2, height=1,
-                                      command=lambda r=j, c=i: board.click(r, c))
-                            for i in range(board.size)] for j in range(board.size)]
-            board.bin_board = [[0 for i in range(board.size + 2)] for j in range(board.size + 2)]
-            board.draw()
-            board.show()
-            board.show_buttons()
+            self.board.board = [[tk.Button(self.board.root, width=2, height=1,
+                                           command=lambda r=j, c=i: self.board.click(r, c))
+                                 for i in range(self.board.size)] for j in range(self.board.size)]
+            self.board.bin_board = [[0 for i in range(self.board.size + 2)] for j in range(self.board.size + 2)]
+            self.board.draw()
+            self.board.show()
+            self.board.show_buttons()
 
             # destroy Settings window
             self.top.destroy()
