@@ -1,6 +1,10 @@
 import tkinter as tk
+from tkinter import messagebox
 
 TIME_STEP = 500
+
+MAX_SIZE = 22
+MIN_SIZE = 10
 
 
 def start(board):
@@ -8,6 +12,45 @@ def start(board):
     this function is used to call out Settings window
     """
     Settings(board)
+
+
+class SettingException(Exception):
+    """
+    this is an exception class that pop up messagebox when show() is called
+    """
+
+    def show(self):
+        messagebox.showerror("Error", self.__str__())
+
+
+class CharException(SettingException):
+    """
+    CharException class inherits from SettingException
+    it changes text in messagebox
+    """
+
+    def __str__(self):
+        return "Char symbolizes living cell, it must be single character."
+
+
+class SizeException(SettingException):
+    """
+    SizeException class inherits from SettingException
+    it changes text in messagebox
+    """
+
+    def __str__(self):
+        return "Size of the board must belong to <{}, {}>.".format(MIN_SIZE, MAX_SIZE)
+
+
+class TimeStepException(SettingException):
+    """
+    TimeStepException class inherits from SettingException
+    it changes text in messagebox
+    """
+
+    def __str__(self):
+        return "Time step is length of day in milliseconds, it must be an integer."
 
 
 class Settings:
@@ -60,20 +103,31 @@ class Settings:
         """
         sets param char, taken from entry
         """
-        board.char = self.char_entry.get()
+        char = self.char_entry.get()
+        if len(char) > 1:
+            raise CharException
+        else:
+            board.char = char
 
     def set_size(self, board):
         """
         sets param size, taken from entry
         """
-        board.size = int(self.size_entry.get())
+        size = int(self.size_entry.get())
+        if size > MAX_SIZE or size < MIN_SIZE:
+            raise SizeException
+        else:
+            board.size = size
 
     def set_time_step(self):
         """
         sets param TIME_STEP, taken from entry
         """
         global TIME_STEP
-        TIME_STEP = int(self.time_step_entry.get())
+        try:
+            TIME_STEP = int(self.time_step_entry.get())
+        except Exception:
+            raise TimeStepException
 
     def save_settings(self, board):
         """
@@ -81,18 +135,21 @@ class Settings:
         it sets all params, edits the board and destroy Settings window
         """
         # set param
-        self.set_char(board)
-        self.set_size(board)
-        self.set_time_step()
+        try:
+            self.set_char(board)
+            self.set_size(board)
+            self.set_time_step()
+        except SettingException as err:
+            err.show()
+        else:
+            # edit the board and show new
+            board.board = [[tk.Button(board.root, width=2, height=1,
+                                      command=lambda r=j, c=i: board.click(r, c))
+                            for i in range(board.size)] for j in range(board.size)]
+            board.bin_board = [[0 for i in range(board.size + 2)] for j in range(board.size + 2)]
+            board.draw()
+            board.show()
+            board.show_buttons()
 
-        # edit the board and show new
-        board.board = [[tk.Button(board.root, width=2, height=1,
-                                  command=lambda r=j, c=i: board.click(r, c))
-                        for i in range(board.size)] for j in range(board.size)]
-        board.bin_board = [[0 for i in range(board.size + 2)] for j in range(board.size + 2)]
-        board.draw()
-        board.show()
-        board.show_buttons()
-
-        # destroy Settings window
-        self.top.destroy()
+            # destroy Settings window
+            self.top.destroy()
