@@ -1,10 +1,29 @@
+import math
 import tkinter as tk
+import enum
 from tkinter import messagebox
 
+""" length of day in milliseconds"""
 TIME_STEP = 500
 
+""" MAX and MIN size of the board"""
 MAX_SIZE = 22
 MIN_SIZE = 10
+
+""" relative path to program icon """
+ICON_PATH = "ant_icon.ico"
+
+
+class Color(enum.Enum):
+    """
+    Color contains hex representation of common colors
+    """
+    RED = "#ff0000"
+    GREEN = "#00ff00"
+    BLUE = "#0000ff"
+    BLACK = "#000000"
+    TURQUOISE = "#40e0d0"
+    PINK = "#ff69b4"
 
 
 def start(board):
@@ -64,21 +83,26 @@ class Settings:
 
     def __init__(self, board):
         """
-        creates new window, entries for params and save button param
+        creates new window, entries for params, color buttons and save button param
         at the end it calls self.show() which grids all the stuff
         """
         self.board = board
         # creates new window
         self.top = tk.Toplevel()
         self.top.title("SETTINGS")
+        self.top.iconbitmap(ICON_PATH)
 
         # creates entries for params
-        self.char_entry = tk.Entry(self.top, width=10)
+        self.char_entry = tk.Entry(self.top, width=11)
         self.char_entry.insert(0, self.board.char)
-        self.size_entry = tk.Entry(self.top, width=10)
+        self.size_entry = tk.Entry(self.top, width=11)
         self.size_entry.insert(0, self.board.size)
-        self.time_step_entry = tk.Entry(self.top, width=10)
+        self.time_step_entry = tk.Entry(self.top, width=11)
         self.time_step_entry.insert(0, TIME_STEP)
+
+        # creates color buttons
+        self.color_buttons = [tk.Button(self.top, width=2, height=1, bg=color.value,
+                                        command=lambda color=color: self.color_button_click(color)) for color in Color]
 
         # creates save_settings button
         self.save_button = tk.Button(self.top, text="SAVE SETTINGS",
@@ -89,16 +113,42 @@ class Settings:
     def show(self):
         """
         grids entries and labels for params
+        grids color_buttons
         grids save_button
         """
         tk.Label(self.top, text="CHAR: ").grid(row=0, column=0, stick=tk.W)
-        self.char_entry.grid(row=0, column=1)
+        self.char_entry.grid(row=0, column=1, columnspan=4)
         tk.Label(self.top, text="SIZE: ").grid(row=1, column=0, stick=tk.W)
-        self.size_entry.grid(row=1, column=1)
+        self.size_entry.grid(row=1, column=1, columnspan=4)
         tk.Label(self.top, text="TIME STEP [ms]: ").grid(row=2, column=0, stick=tk.W)
-        self.time_step_entry.grid(row=2, column=1)
+        self.time_step_entry.grid(row=2, column=1, columnspan=4)
 
-        self.save_button.grid(row=3, columnspan=2)
+        # show color buttons, make active color DISABLED, 3 colors in row
+        tk.Label(self.top, text="COLOR: ").grid(row=3, column=0, stick=tk.W)
+        i = 0
+        for color_button in self.color_buttons:
+            if color_button['bg'] == self.board.color:
+                color_button['state'] = tk.DISABLED
+                color_button['text'] = "X"
+            color_button.grid(row=3 + i // 3, column=1 + i % 3)
+            i += 1
+
+        self.save_button.grid(row=3 + math.ceil(len(Color) / 3), columnspan=2 + len(Color))
+
+    def color_button_click(self, color):
+        """
+        called when click color_button
+        makes another button NORMAL
+        put X in clicked button
+        :param color: color of clicked button
+        """
+        for color_button in self.color_buttons:
+            if color_button['bg'] == color.value:
+                color_button['state'] = tk.DISABLED
+                color_button['text'] = "X"
+            else:
+                color_button['state'] = tk.NORMAL
+                color_button['text'] = ""
 
     def set_char(self):
         """
@@ -130,6 +180,14 @@ class Settings:
         except Exception:
             raise TimeStepException
 
+    def set_color(self):
+        """
+        sets color that is clicked
+        """
+        for color_button in self.color_buttons:
+            if color_button['state'] == tk.DISABLED:
+                self.board.color = color_button['bg']
+
     def save_settings(self):
         """
         this function is called when one clicks save_button
@@ -140,14 +198,12 @@ class Settings:
             self.set_char()
             self.set_size()
             self.set_time_step()
+            self.set_color()
         except SettingException as err:
             err.show()
         else:
             # edit the board and show new
-            self.board.board = [[tk.Button(self.board.root, width=2, height=1,
-                                           command=lambda r=j, c=i: self.board.click(r, c))
-                                 for i in range(self.board.size)] for j in range(self.board.size)]
-            self.board.bin_board = [[0 for i in range(self.board.size + 2)] for j in range(self.board.size + 2)]
+            self.board.board_init()
             self.board.draw()
             self.board.show()
             self.board.show_buttons()

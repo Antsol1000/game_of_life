@@ -1,4 +1,5 @@
 import tkinter as tk
+import tkinter.font as font
 import random
 import settings
 
@@ -8,7 +9,7 @@ class Board:
     class Board contains all the stuff displayed on root window
     """
 
-    def __init__(self, root, size, char):
+    def __init__(self, root, size, char, color):
         """
         constructor creates buttons, board which is call out
         and bin_which is binary representation of the board
@@ -35,11 +36,20 @@ class Board:
         self.char = char
         self.size = size
         self.root = root
+        self.color = color
         # initialization of board and its binary representation
-        self.board = [[tk.Button(root, width=2, height=1,
+        self.board, self.bin_board = None, None
+        self.board_init()
+
+    def board_init(self):
+        """
+        initialization of board and its binary representation
+        """
+        self.board = [[tk.Button(self.root, width=2, height=1,
+                                 disabledforeground=self.color, font=font.Font(size=10, weight='bold'),
                                  command=lambda r=j, c=i: self.click(r, c))
-                       for i in range(size)] for j in range(size)]
-        self.bin_board = [[0 for i in range(size + 2)] for j in range(size + 2)]
+                       for i in range(self.size)] for j in range(self.size)]
+        self.bin_board = [[0 for i in range(self.size + 2)] for j in range(self.size + 2)]
 
     def show_buttons(self):
         """
