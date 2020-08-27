@@ -3,6 +3,14 @@ import tkinter.font as font
 import random
 import settings
 
+""" Relative path to button icons """
+SETTINGS_ICON_PATH = "bin\\settings_icon.png"
+EXIT_ICON_PATH = "bin\\exit_icon.png"
+START_ICON_PATH = "bin\\start_icon.png"
+DRAW_ICON_PATH = "bin\\draw_icon.png"
+RESET_ICON_PATH = "bin\\reset_icon.png"
+CLEAR_ICON_PATH = "bin\\clear_icon.png"
+
 
 class Board:
     """
@@ -17,19 +25,27 @@ class Board:
         :param size: size of the board in cells
         :param char: marks living cell
         """
+        # keep icons in class to protect from deleting
+        self.settings_image = tk.PhotoImage(file=SETTINGS_ICON_PATH)
+        self.exit_image = tk.PhotoImage(file=EXIT_ICON_PATH)
+        self.start_image = tk.PhotoImage(file=START_ICON_PATH)
+        self.draw_image = tk.PhotoImage(file=DRAW_ICON_PATH)
+        self.reset_image = tk.PhotoImage(file=RESET_ICON_PATH)
+        self.clear_image = tk.PhotoImage(file=CLEAR_ICON_PATH)
+
         # initialization of functional buttons
-        self.settings_button = tk.Button(root, text="SETTINGS", height=1,
+        self.settings_button = tk.Button(root, image=self.settings_image,
                                          command=lambda: settings.start(self))
-        self.exit_button = tk.Button(root, text="EXIT", height=1,
+        self.exit_button = tk.Button(root, image=self.exit_image,
                                      command=root.destroy)
-        self.draw_button = tk.Button(root, text='DRAW', height=1,
-                                     command=self.draw)
-        self.start_game_button = tk.Button(root, text="START", height=1,
+        self.start_game_button = tk.Button(root, image=self.start_image,
                                            command=lambda: self.start_game(settings.TIME_STEP))
-        self.clear_button = tk.Button(root, text="CLEAR", height=1,
-                                      command=self.clear)
-        self.reset_day_button = tk.Button(root, text="RESET", height=1,
+        self.draw_button = tk.Button(root, image=self.draw_image,
+                                     command=self.draw)
+        self.reset_day_button = tk.Button(root, image=self.reset_image,
                                           command=self.reset_day)
+        self.clear_button = tk.Button(root, image=self.clear_image,
+                                      command=self.clear)
         # number of the day
         self.day_number = 0
         # params
@@ -47,7 +63,7 @@ class Board:
         """
         self.board = [[tk.Button(self.root, width=2, height=1,
                                  disabledforeground=self.color, font=font.Font(size=10, weight='bold'),
-                                 command=lambda r=j, c=i: self.click(r, c))
+                                 command=lambda row=j, column=i: self.click_cell(row, column))
                        for i in range(self.size)] for j in range(self.size)]
         self.bin_board = [[0 for i in range(self.size + 2)] for j in range(self.size + 2)]
 
@@ -56,8 +72,8 @@ class Board:
         display functional buttons
         """
         # top
-        self.settings_button.grid(columnspan=3, column=0, row=0, stick=tk.W)
-        self.exit_button.grid(columnspan=3, column=self.size - 3, row=0, stick=tk.E)
+        self.settings_button.grid(columnspan=2, column=0, row=0, stick=tk.W)
+        self.exit_button.grid(columnspan=2, column=self.size - 2, row=0, stick=tk.E)
         # bottom left
         self.start_game_button.grid(columnspan=2, column=0, row=self.size + 1, stick=tk.W)
         self.draw_button.grid(columnspan=2, column=2, row=self.size + 1, stick=tk.W)
@@ -65,13 +81,24 @@ class Board:
         self.clear_button.grid(columnspan=2, column=self.size - 2, row=self.size + 1, stick=tk.E)
         self.reset_day_button.grid(columnspan=2, column=self.size - 4, row=self.size + 1, stick=tk.E)
 
-    def click(self, row, column):
+    def wake_cell(self, row, column):
         """
         come alive cell in row and column given in params
         """
         self.board[row][column]['state'] = tk.DISABLED
         self.board[row][column]['text'] = self.char
         self.bin_board[row + 1][column + 1] = 1
+
+    def click_cell(self, row, column):
+        """
+        change the status of cell
+        """
+        if self.board[row][column]['text'] == "":
+            self.board[row][column]['text'] = self.char
+            self.bin_board[row + 1][column + 1] = 1
+        else:
+            self.board[row][column]['text'] = ""
+            self.bin_board[row + 1][column + 1] = 0
 
     def show(self):
         """
@@ -81,6 +108,7 @@ class Board:
             for j in range(self.size):
                 self.board[i][j].grid(row=i + 1, column=j)
         self.show_day_number()
+        self.show_number_of_living_cells()
 
     def check_status(self, row, column):
         """
@@ -134,7 +162,7 @@ class Board:
                         self.board[i][j]['text'] = ""
 
             # count alive cells and call out next step() after TIME_STEP
-            self.count()
+            self.show_number_of_living_cells()
             self.root.after(time_step, lambda: self.step(time_step))
         else:
             self.start_game_button['state'] = tk.DISABLED
@@ -148,8 +176,8 @@ class Board:
             for j in range(self.size):
                 self.board[i][j]['state'] = tk.DISABLED
                 if random.randint(0, 1) == 1:
-                    self.click(i, j)
-        self.count()
+                    self.wake_cell(i, j)
+        self.show_number_of_living_cells()
         self.start_game_button['state'] = tk.NORMAL
 
     def clear(self):
@@ -160,17 +188,25 @@ class Board:
         for buttons in self.board:
             for button in buttons:
                 button['text'] = ""
+        self.show_number_of_living_cells()
 
-    def count(self):
+    def count_living_cells(self):
         """
-        count living cells and display the score
+        :return: number of living cells
         """
         living_cells = 0
         for i in self.bin_board:
             for j in i:
                 living_cells += j
-        tk.Label(self.root, text="living cells: {}  ".format(living_cells)).grid(columnspan=4, column=5,
-                                                                                 row=0, stick=tk.W)
+        return living_cells
+
+    def show_number_of_living_cells(self):
+        """
+        display number of living cells
+        """
+        tk.Label(self.root,
+                 text="living cells: {}  ".format(self.count_living_cells())).grid(columnspan=4, column=5,
+                                                                                   row=0, stick=tk.W)
 
     def reset_day(self):
         """
@@ -183,5 +219,5 @@ class Board:
         """
         display label with day_number
         """
-        tk.Label(self.root, text="day:{:03d}".format(self.day_number)).grid(columnspan=2, column=3,
+        tk.Label(self.root, text="day:{:03d}".format(self.day_number)).grid(columnspan=2, column=2,
                                                                             row=0, stick=tk.W)

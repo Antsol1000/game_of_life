@@ -11,19 +11,23 @@ MAX_SIZE = 22
 MIN_SIZE = 10
 
 """ relative path to program icon """
-ICON_PATH = "ant_icon.ico"
+ICON_PATH = "bin\\ant_icon.ico"
 
 
 class Color(enum.Enum):
     """
     Color contains hex representation of common colors
+    Feel free to add new colors
     """
     RED = "#ff0000"
     GREEN = "#00ff00"
     BLUE = "#0000ff"
     BLACK = "#000000"
     TURQUOISE = "#40e0d0"
-    PINK = "#ff69b4"
+    HOT_PINK = "#ff69b4"
+    YELLOW = "#ffff00"
+    ORANGE = "#ffa500"
+    BRITISH_RACING_GREEN = "#004225"
 
 
 def start(board):
