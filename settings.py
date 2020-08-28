@@ -66,6 +66,17 @@ class SizeException(SettingException):
         return "Size of the board must belong to <{}, {}>.".format(MIN_SIZE, MAX_SIZE)
 
 
+class SmallerSizeException(SettingException):
+    """
+    SmallerSizeException class inherits from SettingException
+    it changes text in messagebox
+    it is called when one want to shrink down the board
+    """
+
+    def __str__(self):
+        return "If you want to shrink down the size you have to restart the program."
+
+
 class TimeStepException(SettingException):
     """
     TimeStepException class inherits from SettingException
@@ -171,6 +182,8 @@ class Settings:
         size = int(self.size_entry.get())
         if size > MAX_SIZE or size < MIN_SIZE:
             raise SizeException
+        elif size < self.board.size:
+            raise SmallerSizeException
         else:
             self.board.size = size
 

@@ -8,6 +8,8 @@ SETTINGS_ICON_PATH = "bin\\settings_icon.png"
 EXIT_ICON_PATH = "bin\\exit_icon.png"
 START_ICON_PATH = "bin\\start_icon.png"
 DRAW_ICON_PATH = "bin\\draw_icon.png"
+CHOOSE_1_ICON_PATH = "bin\\choose_1_icon.png"
+CHOOSE_2_ICON_PATH = "bin\\choose_2_icon.png"
 RESET_ICON_PATH = "bin\\reset_icon.png"
 CLEAR_ICON_PATH = "bin\\clear_icon.png"
 
@@ -30,6 +32,8 @@ class Board:
         self.exit_image = tk.PhotoImage(file=EXIT_ICON_PATH)
         self.start_image = tk.PhotoImage(file=START_ICON_PATH)
         self.draw_image = tk.PhotoImage(file=DRAW_ICON_PATH)
+        self.choose_1_image = tk.PhotoImage(file=CHOOSE_1_ICON_PATH)
+        self.choose_2_image = tk.PhotoImage(file=CHOOSE_2_ICON_PATH)
         self.reset_image = tk.PhotoImage(file=RESET_ICON_PATH)
         self.clear_image = tk.PhotoImage(file=CLEAR_ICON_PATH)
 
@@ -42,6 +46,8 @@ class Board:
                                            command=lambda: self.start_game(settings.TIME_STEP))
         self.draw_button = tk.Button(root, image=self.draw_image,
                                      command=self.draw)
+        self.choose_button = tk.Button(root, image=self.choose_1_image, text="CHOOSE",
+                                       command=self.choose)
         self.reset_day_button = tk.Button(root, image=self.reset_image,
                                           command=self.reset_day)
         self.clear_button = tk.Button(root, image=self.clear_image,
@@ -76,10 +82,11 @@ class Board:
         self.exit_button.grid(columnspan=2, column=self.size - 2, row=0, stick=tk.E)
         # bottom left
         self.start_game_button.grid(columnspan=2, column=0, row=self.size + 1, stick=tk.W)
-        self.draw_button.grid(columnspan=2, column=2, row=self.size + 1, stick=tk.W)
+        self.draw_button.grid(columnspan=2, column=2, row=self.size + 1)
+        self.choose_button.grid(columnspan=2, column=4, row=self.size + 1)
         # bottom right
         self.clear_button.grid(columnspan=2, column=self.size - 2, row=self.size + 1, stick=tk.E)
-        self.reset_day_button.grid(columnspan=2, column=self.size - 4, row=self.size + 1, stick=tk.E)
+        self.reset_day_button.grid(columnspan=2, column=self.size - 4, row=self.size + 1)
 
     def wake_cell(self, row, column):
         """
@@ -99,6 +106,27 @@ class Board:
         else:
             self.board[row][column]['text'] = ""
             self.bin_board[row + 1][column + 1] = 0
+
+    def choose(self):
+        """
+        enable to manually change the state of cell
+        """
+        if self.choose_button['text'] == "CHOOSE":
+            for buttons in self.board:
+                for button in buttons:
+                    button['state'] = tk.NORMAL
+            self.choose_button['image'] = self.choose_2_image
+            self.choose_button['text'] = "SAVE"
+            self.start_game_button['state'] = tk.DISABLED
+            self.draw_button['state'] = tk.DISABLED
+        else:
+            for buttons in self.board:
+                for button in buttons:
+                    button['state'] = tk.DISABLED
+            self.choose_button['image'] = self.choose_1_image
+            self.choose_button['text'] = "CHOOSE"
+            self.start_game_button['state'] = tk.NORMAL
+            self.draw_button['state'] = tk.NORMAL
 
     def show(self):
         """
