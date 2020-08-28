@@ -3,7 +3,7 @@ import tkinter.font as font
 import random
 import settings
 
-""" Relative path to button icons """
+""" Relative paths to buttons' icons """
 SETTINGS_ICON_PATH = "bin\\settings_icon.png"
 EXIT_ICON_PATH = "bin\\exit_icon.png"
 START_ICON_PATH = "bin\\start_icon.png"
@@ -18,6 +18,8 @@ class Board:
     """
     class Board contains all the stuff displayed on root window
     """
+
+    # init methods ------------------------------------------------------------------------------
 
     def __init__(self, root, size, char, color):
         """
@@ -73,6 +75,18 @@ class Board:
                        for i in range(self.size)] for j in range(self.size)]
         self.bin_board = [[0 for i in range(self.size + 2)] for j in range(self.size + 2)]
 
+    # show methods ------------------------------------------------------------------------------------
+
+    def show(self):
+        """
+        display the board
+        """
+        for i in range(self.size):
+            for j in range(self.size):
+                self.board[i][j].grid(row=i + 1, column=j)
+        self.show_day_number()
+        self.show_number_of_living_cells()
+
     def show_buttons(self):
         """
         display functional buttons
@@ -87,6 +101,23 @@ class Board:
         # bottom right
         self.clear_button.grid(columnspan=2, column=self.size - 2, row=self.size + 1, stick=tk.E)
         self.reset_day_button.grid(columnspan=2, column=self.size - 4, row=self.size + 1)
+
+    def show_number_of_living_cells(self):
+        """
+        display number of living cells
+        """
+        tk.Label(self.root,
+                 text="living cells: {}  ".format(self.count_living_cells())).grid(columnspan=4, column=5,
+                                                                                   row=0, stick=tk.W)
+
+    def show_day_number(self):
+        """
+        display label with day_number
+        """
+        tk.Label(self.root, text="day:{:03d}".format(self.day_number)).grid(columnspan=2, column=2,
+                                                                            row=0, stick=tk.W)
+
+    # cell manipulation methods -----------------------------------------------------------------------------
 
     def wake_cell(self, row, column):
         """
@@ -106,6 +137,29 @@ class Board:
         else:
             self.board[row][column]['text'] = ""
             self.bin_board[row + 1][column + 1] = 0
+
+    def clear(self):
+        """
+        clear the board from alive cells
+        """
+        self.bin_board = [[0 for i in range(self.size + 2)] for j in range(self.size + 2)]
+        for buttons in self.board:
+            for button in buttons:
+                button['text'] = ""
+        self.show_number_of_living_cells()
+
+    def draw(self):
+        """
+        draw alive cells in the beginning
+        """
+        self.clear()
+        for i in range(self.size):
+            for j in range(self.size):
+                self.board[i][j]['state'] = tk.DISABLED
+                if random.randint(0, 1) == 1:
+                    self.wake_cell(i, j)
+        self.show_number_of_living_cells()
+        self.start_game_button['state'] = tk.NORMAL
 
     def choose(self):
         """
@@ -128,15 +182,13 @@ class Board:
             self.start_game_button['state'] = tk.NORMAL
             self.draw_button['state'] = tk.NORMAL
 
-    def show(self):
+    # game of life methods --------------------------------------------------------------------------------
+
+    def start_game(self, time_step):
         """
-        display the board
+        call out first step
         """
-        for i in range(self.size):
-            for j in range(self.size):
-                self.board[i][j].grid(row=i + 1, column=j)
-        self.show_day_number()
-        self.show_number_of_living_cells()
+        self.step(time_step)
 
     def check_status(self, row, column):
         """
@@ -147,12 +199,6 @@ class Board:
                      + self.bin_board[row][column + 1] + self.bin_board[row + 1][column - 1] + \
                      + self.bin_board[row + 1][column] + self.bin_board[row + 1][column + 1]
         return neighbours
-
-    def start_game(self, time_step):
-        """
-        call out first step
-        """
-        self.step(time_step)
 
     def step(self, time_step):
         """
@@ -195,28 +241,7 @@ class Board:
         else:
             self.start_game_button['state'] = tk.DISABLED
 
-    def draw(self):
-        """
-        draw alive cells in the beginning
-        """
-        self.clear()
-        for i in range(self.size):
-            for j in range(self.size):
-                self.board[i][j]['state'] = tk.DISABLED
-                if random.randint(0, 1) == 1:
-                    self.wake_cell(i, j)
-        self.show_number_of_living_cells()
-        self.start_game_button['state'] = tk.NORMAL
-
-    def clear(self):
-        """
-        clear the board from alive cells
-        """
-        self.bin_board = [[0 for i in range(self.size + 2)] for j in range(self.size + 2)]
-        for buttons in self.board:
-            for button in buttons:
-                button['text'] = ""
-        self.show_number_of_living_cells()
+    # statistic methods -----------------------------------------------------------------------------------------
 
     def count_living_cells(self):
         """
@@ -228,24 +253,9 @@ class Board:
                 living_cells += j
         return living_cells
 
-    def show_number_of_living_cells(self):
-        """
-        display number of living cells
-        """
-        tk.Label(self.root,
-                 text="living cells: {}  ".format(self.count_living_cells())).grid(columnspan=4, column=5,
-                                                                                   row=0, stick=tk.W)
-
     def reset_day(self):
         """
         reset and display day_number
         """
         self.day_number = 0
         self.show_day_number()
-
-    def show_day_number(self):
-        """
-        display label with day_number
-        """
-        tk.Label(self.root, text="day:{:03d}".format(self.day_number)).grid(columnspan=2, column=2,
-                                                                            row=0, stick=tk.W)

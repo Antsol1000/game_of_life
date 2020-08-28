@@ -37,6 +37,8 @@ def start(board):
     Settings(board)
 
 
+# exceptions ---------------------------------------------------------------------------------
+
 class SettingException(Exception):
     """
     this is an exception class that pop up messagebox when show() is called
@@ -85,6 +87,8 @@ class TimeStepException(SettingException):
 
     def __str__(self):
         return "Time step is length of day in milliseconds, it must be an integer."
+
+# end of exceptions -----------------------------------------------------------------------------------
 
 
 class Settings:
